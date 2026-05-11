@@ -141,6 +141,70 @@ async def get_tracker(db: Session = Depends(get_db)):
     }
 
 from sqlalchemy import text
+from datetime import date as date_type
+
+TARGET_DATE = date_type(2026, 5, 30)
+
+@router.get("/projection")
+async def get_projection(db: Session = Depends(get_db)):
+    """
+    Dự tính xếp hạng ngày 30/05/2026 dựa trên W.Rate hiện tại.
+    Tính toán jade cần thêm mỗi ngày để vào top 50.
+    """
+    latest_snapshot = db.query(Snapshot).order_by(desc(Snapshot.date)).first()
+    if not latest_snapshot:
+        return {"error": "Chưa có dữ liệu"}
+
+    days_remaining = (TARGET_DATE - latest_snapshot.date).days
+    if days_remaining < 0:
+        days_remaining = 0
+
+    rankings = db.query(Ranking).filter(
+        Ranking.snapshot_id == latest_snapshot.id
+    ).all()
+
+    users = []
+    for r in rankings:
+        w_rate = r.w_rate or 0
+        proj_jade = int(r.jade + w_rate * days_remaining)
+        if proj_jade < 0:
+            proj_jade = 0
+        users.append({
+            "alias": r.alias,
+            "username": r.username,
+            "is_team": bool(r.is_team),
+            "team_role": r.team_role,
+            "current_rank": r.rank,
+            "current_jade": r.jade or 0,
+            "w_rate": round(w_rate, 1),
+            "proj_jade": proj_jade,
+        })
+
+    # Sắp xếp theo proj_jade giảm dần → gán proj_rank
+    users.sort(key=lambda x: x["proj_jade"], reverse=True)
+    for i, u in enumerate(users):
+        u["proj_rank"] = i + 1
+
+    # Ngưỡng jade tại hạng 50
+    rank50_jade = users[49]["proj_jade"] if len(users) >= 50 else 0
+
+    # Tính gap và daily_needed
+    for u in users:
+        gap = rank50_jade - u["proj_jade"]
+        u["jade_gap_to_50"] = gap  # âm = đã trong top 50
+        if gap > 0 and days_remaining > 0:
+            u["daily_needed"] = round(gap / days_remaining, 0)
+        else:
+            u["daily_needed"] = 0
+
+    return {
+        "target_date": TARGET_DATE.isoformat(),
+        "latest_snapshot_date": latest_snapshot.date.isoformat(),
+        "days_remaining": days_remaining,
+        "rank50_projected_jade": rank50_jade,
+        "total_users": len(users),
+        "users": users,
+    }
 
 @router.get("/aliases")
 async def get_alias_summary(db: Session = Depends(get_db)):

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dự tính 30/05 - ARO Tracker</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<div class="container-wide">
+    <header>
+        <div>
+            <h1>ARO Sprint 2 Tracker</h1>
+            <p style="color: var(--text-muted); font-size: 0.875rem;">Dự tính xếp hạng ngày 30/05/2026</p>
+        </div>
+        <nav class="nav-links">
+            <a href="/">Dashboard</a>
+            <a href="/tracker">Tracker</a>
+            <a href="/team">Team</a>
+            <a href="/charts">Charts</a>
+            <a href="/projection" class="active">Dự tính 30/05</a>
+            <a href="/settings">Settings</a>
+        </nav>
+    </header>
+
+    <!-- Summary Cards -->
+    <div class="grid" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 1.5rem;">
+        <div class="card" style="margin-bottom:0; text-align:center;">
+            <div style="color:var(--text-muted); font-size:0.8rem; margin-bottom:0.25rem;">Ngày còn lại</div>
+            <div id="days-remaining" style="font-size:2rem; font-weight:700; color:var(--warning)">—</div>
+            <div style="color:var(--text-muted); font-size:0.75rem;">đến 30/05/2026</div>
+        </div>
+        <div class="card" style="margin-bottom:0; text-align:center;">
+            <div style="color:var(--text-muted); font-size:0.8rem; margin-bottom:0.25rem;">Ngưỡng jade hạng #50</div>
+            <div id="rank50-jade" style="font-size:1.5rem; font-weight:700; color:var(--info)">—</div>
+            <div style="color:var(--text-muted); font-size:0.75rem;">dự tính 30/05</div>
+        </div>
+        <div class="card" style="margin-bottom:0; text-align:center;">
+            <div style="color:var(--text-muted); font-size:0.8rem; margin-bottom:0.25rem;">Team trong Top 50</div>
+            <div id="team-in-top50" style="font-size:2rem; font-weight:700; color:var(--success)">—</div>
+            <div style="color:var(--text-muted); font-size:0.75rem;">thành viên</div>
+        </div>
+        <div class="card" style="margin-bottom:0; text-align:center;">
+            <div style="color:var(--text-muted); font-size:0.8rem; margin-bottom:0.25rem;">Snapshot gần nhất</div>
+            <div id="snapshot-date" style="font-size:1.25rem; font-weight:700; color:var(--text)">—</div>
+            <div style="color:var(--text-muted); font-size:0.75rem;">dữ liệu mới nhất</div>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:0.75rem;">
+            <h2 style="font-size:1rem; font-weight:600;">Bảng dự tính xếp hạng 30/05</h2>
+            <div style="display:flex; gap:0.5rem; align-items:center;">
+                <span style="color:var(--text-muted); font-size:0.85rem;">Hiển thị:</span>
+                <button id="btn-all" onclick="setFilter('all')" class="btn btn-primary" style="font-size:0.8rem; padding:0.3rem 0.75rem;">Tất cả</button>
+                <button id="btn-team" onclick="setFilter('team')" class="btn" style="font-size:0.8rem; padding:0.3rem 0.75rem; background:var(--surface); border:1px solid var(--text-muted); color:var(--text);">Team</button>
+            </div>
+        </div>
+
+        <div style="overflow-x:auto;">
+            <table style="width:100%; border-collapse:collapse; font-size:0.875rem;">
+                <thead>
+                    <tr style="color:var(--text-muted); font-size:0.8rem; border-bottom:1px solid rgba(255,255,255,0.1);">
+                        <th style="padding:0.6rem 0.5rem; text-align:center; white-space:nowrap;">Hạng<br><span style="font-weight:400">30/05</span></th>
+                        <th style="padding:0.6rem 0.5rem; text-align:left;">Alias</th>
+                        <th style="padding:0.6rem 0.5rem; text-align:center;">Role</th>
+                        <th style="padding:0.6rem 0.5rem; text-align:center;">Hạng<br><span style="font-weight:400">hiện tại</span></th>
+                        <th style="padding:0.6rem 0.5rem; text-align:right;">Jade<br><span style="font-weight:400">hiện tại</span></th>
+                        <th style="padding:0.6rem 0.5rem; text-align:right;">W.Rate<br><span style="font-weight:400">/ngày</span></th>
+                        <th style="padding:0.6rem 0.5rem; text-align:right;">Jade dự tính<br><span style="font-weight:400">30/05</span></th>
+                        <th style="padding:0.6rem 0.5rem; text-align:right;">Cần thêm<br><span style="font-weight:400">vào top 50</span></th>
+                        <th style="padding:0.6rem 0.5rem; text-align:right;">Cần/ngày<br><span style="font-weight:400">để vào #50</span></th>
+                    </tr>
+                </thead>
+                <tbody id="proj-body">
+                    <tr><td colspan="9" style="text-align:center; padding:2rem; color:var(--text-muted)">Đang tải...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div style="color:var(--text-muted); font-size:0.75rem; text-align:center; margin-top:-0.5rem;">
+        * Dự tính dựa trên W.Rate (tốc độ tăng jade có trọng số). Kết quả thực tế có thể khác.
+    </div>
+</div>
+
+<script src="/static/projection.js"></script>
+</body>
+</html>
