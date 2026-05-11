@@ -1,0 +1,14 @@
+data/
+__pycache__/
+*.pyc
+*.pyo
+.git/
+.gitignore
+*.md
+*.xlsx
+*.xls
+*.db
+scratch/
+venv/
+.env
+.claude/
