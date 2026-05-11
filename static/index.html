@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARO Sprint 2 Tracker</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container-wide">
+        <header>
+            <div>
+                <h1>ARO Sprint 2 Tracker</h1>
+                <p id="latest-date" style="color: var(--text-muted); font-size: 0.875rem;">Loading date...</p>
+            </div>
+            <nav class="nav-links">
+                <a href="/" class="active">Dashboard</a>
+                <a href="/tracker">Tracker</a>
+                <a href="/team">Team</a>
+                <a href=\"/charts\">Charts</a>`n            <a href=\"/settings\">Settings</a>
+                <button onclick="showImportModal()" class="btn btn-primary">Import BXH</button>
+            </nav>
+        </header>
+
+        <div id="alerts-container"></div>
+
+        <!-- Section A: nau*** Status -->
+        <div class="card" id="nau-status">
+            <h2 style="margin-bottom: 1rem;">nau*** Status</h2>
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Rank</div>
+                    <div class="stat-value" id="nau-rank">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Jade</div>
+                    <div class="stat-value" id="nau-jade">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Delta Hôm Nay</div>
+                    <div class="stat-value" id="nau-delta">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">W.Rate</div>
+                    <div class="stat-value" id="nau-wrate">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Dự báo 31/05</div>
+                    <div class="stat-value" id="nau-proj">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Prize Dự Kiến</div>
+                    <div class="stat-value" id="nau-prize" style="color: var(--success)">-</div>
+                </div>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 3fr 1fr; gap: 1.5rem; align-items: start;">
+            <!-- Section B: Top 100 -->
+            <div class="card">
+                <h2>Top 100 Leaderboard</h2>
+                <div style="margin: 0.75rem 0;">
+                    <input type="text" id="leaderboard-search"
+                        placeholder="🔍 Tìm user..."
+                        oninput="filterLeaderboard(this.value)"
+                        style="width: 280px; padding: 0.4rem 0.75rem; background: var(--background);
+                               color: white; border: 1px solid var(--surface); border-radius: 0.375rem;">
+                </div>
+                <div style="overflow-x: auto; margin-top: 0.75rem;">
+                    <table>
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>User</th>
+                            <th>Jade</th>
+                            <th>Δ Hôm Nay</th>
+                            <th>W.Rate</th>
+                            <th>T1+T2</th>
+                            <th>Verdict</th>
+                            <th>Prize</th>
+                        </tr>
+                    </thead>
+                    <tbody id="top10-body">
+                        <!-- Rows injected here -->
+                    </tbody>
+                </table>
+                </div>
+            </div>
+
+            <!-- Section C: Alerts -->
+            <div class="card">
+                <h2>Cảnh Báo</h2>
+                <div id="alerts-list" style="margin-top: 1rem;">
+                    <!-- Alerts injected here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import Modal -->
+    <div id="import-modal" class="modal">
+        <div class="modal-content">
+            <h2 id="modal-title">Import BXH Hôm Nay</h2>
+
+            <!-- Step 1: Input -->
+            <div id="import-step-1">
+                <div style="margin-top: 1rem;">
+                    <label>Ngày:</label>
+                    <input type="date" id="import-date" class="btn" style="background: var(--background); color: white; border: 1px solid var(--surface)">
+                </div>
+                <textarea id="json-input" placeholder="Paste HTML table hoặc JSON từ BXH ARO vào đây...&#10;&#10;HTML: Copy toàn bộ source của bảng BXH (Ctrl+U → Ctrl+A → Ctrl+C)&#10;JSON: Paste JSON như cũ"></textarea>
+                <div style="margin-bottom: 1rem;">
+                    <label style="cursor: pointer;">
+                        <input type="checkbox" id="import-delayed"> ⚠️ Đánh dấu ngày này có delay
+                    </label>
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <button onclick="previewImport()" class="btn btn-primary" id="preview-btn">🔍 Parse &amp; Preview</button>
+                    <button onclick="hideImportModal()" class="btn" style="background: var(--surface)">Hủy</button>
+                </div>
+            </div>
+
+            <!-- Step 2: Preview -->
+            <div id="import-step-2" style="display: none;">
+                <div id="import-preview-content" style="max-height: 400px; overflow-y: auto; margin: 1rem 0;"></div>
+                <div style="display: flex; gap: 1rem;">
+                    <button onclick="confirmImport()" class="btn btn-primary" id="import-btn">✅ Confirm Import</button>
+                    <button onclick="backToStep1()" class="btn" style="background: var(--surface)">← Sửa lại</button>
+                </div>
+            </div>
+
+            <!-- Quản lý snapshots -->
+            <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--surface)">
+                <h3 style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+                    📅 Snapshots đã import (5 gần nhất)
+                </h3>
+                <div id="snapshot-list" style="display:flex; flex-direction:column; gap:0.5rem;">
+                    <!-- Injected by JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

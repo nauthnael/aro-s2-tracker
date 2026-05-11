@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Master Tracker - ARO Tracker</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container" style="max-width: 100%;">
+        <header>
+            <div>
+                <h1>Master Tracker</h1>
+                <p style="color: var(--text-muted); font-size: 0.875rem;">View all history in pivot mode</p>
+            </div>
+            <nav class="nav-links">
+                <a href="/">Dashboard</a>
+                <a href="/tracker" class="active">Tracker</a>
+                <a href="/team">Team</a>
+                <a href=\"/charts\">Charts</a>`n            <a href=\"/settings\">Settings</a>
+            </nav>
+        </header>
+
+        <div class="card" style="padding: 1rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; gap: 1rem;">
+                <div class="toggle-group">
+                    <button class="active" data-mode="jade" onclick="switchMode('jade')">Jade</button>
+                    <button data-mode="delta" onclick="switchMode('delta')">Δ Delta</button>
+                    <button data-mode="rank" onclick="switchMode('rank')">Rank</button>
+                    <button data-mode="refs" onclick="switchMode('refs')">Refs</button>
+                </div>
+                
+                <div style="display: flex; gap: 1rem; flex-grow: 1; max-width: 600px;">
+                    <input type="text" placeholder="Tìm user..." id="search-input" class="btn" style="flex-grow: 1; text-align: left; background: var(--background); color: white; border: 1px solid var(--surface)">
+                    <select id="filter-select" class="btn" style="background: var(--background); color: white; border: 1px solid var(--surface)">
+                        <option value="all">Tất cả</option>
+                        <option value="top10">Top 10</option>
+                        <option value="team">Team nau***</option>
+                    </select>
+                </div>
+
+                <button onclick="window.location.href='/'" class="btn btn-primary">Import BXH</button>
+            </div>
+
+            <div class="tracker-container">
+                <table class="tracker-table">
+                    <thead>
+                        <tr id="tracker-header">
+                            <!-- Headers injected here -->
+                        </tr>
+                    </thead>
+                    <tbody id="tracker-body">
+                        <!-- Rows injected here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal chọn role khi tick Team -->
+    <div id="team-role-modal" style="
+        display:none; position:fixed; inset:0;
+        background:rgba(0,0,0,0.6); z-index:1000;
+        align-items:center; justify-content:center;
+    ">
+        <div style="
+            background:var(--surface); border-radius:0.75rem;
+            padding:1.5rem; min-width:280px;
+            border:1px solid rgba(255,255,255,0.1);
+        ">
+            <h3 style="margin:0 0 1rem 0; font-size:1rem">Thêm vào Team</h3>
+            <p id="team-modal-alias" style="color:var(--text-muted);font-size:0.875rem;margin:0 0 1rem 0"></p>
+            <div style="display:flex; gap:1rem; margin-bottom:1.5rem">
+                <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer">
+                    <input type="radio" name="team-role" value="T1" checked
+                        style="accent-color:#3b82f6">
+                    <span>T1</span>
+                </label>
+                <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer">
+                    <input type="radio" name="team-role" value="T2"
+                        style="accent-color:#3b82f6">
+                    <span>T2</span>
+                </label>
+            </div>
+            <div style="display:flex;gap:0.75rem">
+                <button onclick="confirmSetTeam()" class="btn btn-primary" style="flex:1">Xác nhận</button>
+                <button onclick="cancelSetTeam()" class="btn" style="background:var(--background);flex:1">Hủy</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/tracker.js"></script>
+</body>
+</html>

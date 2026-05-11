@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Charts - ARO Tracker</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div>
+                <h1>Biểu đồ Trend</h1>
+                <p style="color: var(--text-muted); font-size: 0.875rem;">Theo dõi biến động Jade và Rank</p>
+            </div>
+            <nav class="nav-links">
+                <a href="/">Dashboard</a>
+                <a href="/tracker">Tracker</a>
+                <a href="/team">Team</a>
+                <a href=\"/charts\" class=\"active\">Charts</a>`n            <a href=\"/settings\">Settings</a>
+            </nav>
+        </header>
+
+        <div class="card" style="margin-bottom: 1.5rem;">
+            <h2>Hiển thị Users</h2>
+            <div id="user-selector" style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem;">
+                <!-- Chips will be injected here -->
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <h2>Jade Trend (Top 5)</h2>
+                <div style="height: 300px;"><canvas id="jadeChart"></canvas></div>
+            </div>
+            <div class="card">
+                <h2>Rank Trend</h2>
+                <div style="height: 300px;"><canvas id="rankChart"></canvas></div>
+            </div>
+            <div class="card">
+                <h2>nau*** Daily Delta</h2>
+                <div style="height: 300px;"><canvas id="deltaChart"></canvas></div>
+            </div>
+            <div class="card">
+                <h2>Gap vs #2</h2>
+                <div style="height: 300px;"><canvas id="gapChart"></canvas></div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .chip {
+            padding: 0.35rem 0.75rem;
+            border-radius: 2rem;
+            background: var(--background);
+            border: 1px solid var(--surface);
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+        .chip.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+    </style>
+
+    <script>
+        const COLORS = ['#3b82f6', '#f59e0b', '#10b981', '#8b5cf6', '#ef4444', '#ec4899', '#06b6d4'];
+        let jadeChart, rankChart, deltaChart, gapChart;
+
+        async function initCharts() {
+            const jadeRes = await fetch('/api/charts/jade-history');
+            const jadeData = await jadeRes.json();
+            
+            const nauRes = await fetch('/api/charts/nau-daily');
+            const nauData = await nauRes.json();
+
+            renderJadeChart(jadeData);
+            renderRankChart(jadeData);
+            renderDeltaChart(nauData);
+            renderGapChart(nauData);
+            renderUserSelector(jadeData.series);
+        }
+
+        function renderJadeChart(data) {
+            const ctx = document.getElementById('jadeChart').getContext('2d');
+            jadeChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.dates.map(d => d.split('-').slice(1).join('/')),
+                    datasets: data.series.map((s, i) => ({
+                        label: s.alias,
+                        data: s.jade_history,
+                        borderColor: COLORS[i % COLORS.length],
+                        backgroundColor: COLORS[i % COLORS.length],
+                        tension: 0.3,
+                        pointRadius: 3
+                    }))
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { ticks: { callback: v => (v / 1000).toFixed(0) + 'K' } }
+                    }
+                }
+            });
+        }
+
+        function renderRankChart(data) {
+            const ctx = document.getElementById('rankChart').getContext('2d');
+            // Only top 3 for rank trend by default
+            rankChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.dates.map(d => d.split('-').slice(1).join('/')),
+                    datasets: data.series.slice(0, 3).map((s, i) => ({
+                        label: s.alias,
+                        data: s.rank_history,
+                        borderColor: COLORS[i % COLORS.length],
+                        tension: 0.3,
+                        pointRadius: 4
+                    }))
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { reverse: true, min: 1, ticks: { stepSize: 1 } }
+                    }
+                }
+            });
+        }
+
+        function renderDeltaChart(data) {
+            const ctx = document.getElementById('deltaChart').getContext('2d');
+            deltaChart = new Chart(ctx, {
+                data: {
+                    labels: data.dates.map(d => d.split('-').slice(1).join('/')),
+                    datasets: [
+                        {
+                            type: 'bar',
+                            label: 'Daily Delta',
+                            data: data.nau_delta,
+                            backgroundColor: '#3b82f6',
+                            borderRadius: 4
+                        },
+                        {
+                            type: 'line',
+                            label: 'W.Rate',
+                            data: data.w_rate_line,
+                            borderColor: '#ec4899',
+                            borderDash: [5, 5],
+                            pointRadius: 0,
+                            fill: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: true, position: 'bottom' } }
+                }
+            });
+        }
+
+        function renderGapChart(data) {
+            const ctx = document.getElementById('gapChart').getContext('2d');
+            gapChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.dates.map(d => d.split('-').slice(1).join('/')),
+                    datasets: [{
+                        label: 'Gap vs #2',
+                        data: data.gap_vs_2,
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: { 
+                            beginAtZero: true,
+                            ticks: { callback: v => (v / 1000).toFixed(0) + 'K' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderUserSelector(series) {
+            const container = document.getElementById('user-selector');
+            series.forEach((s, i) => {
+                const chip = document.createElement('button');
+                chip.className = 'chip active';
+                chip.innerText = s.alias;
+                chip.onclick = () => {
+                    chip.classList.toggle('active');
+                    const isVisible = chip.classList.contains('active');
+                    jadeChart.setDatasetVisibility(i, isVisible);
+                    jadeChart.update();
+                    
+                    if (i < 3) {
+                        rankChart.setDatasetVisibility(i, isVisible);
+                        rankChart.update();
+                    }
+                };
+                container.appendChild(chip);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', initCharts);
+    </script>
+</body>
+</html>

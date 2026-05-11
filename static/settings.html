@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ARO Sprint 2 — Settings</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<div class="container-wide">
+    <header>
+        <div>
+            <h1>ARO Sprint 2 Tracker</h1>
+            <p style="color: var(--text-muted); font-size: 0.875rem;">Settings</p>
+        </div>
+        <nav class="nav-links">
+            <a href="/">Dashboard</a>
+            <a href="/tracker">Tracker</a>
+            <a href="/team">Team</a>
+            <a href="/charts">Charts</a>
+            <a href="/settings" class="active">Settings</a>
+            <button onclick="showImportModal()" class="btn btn-primary">Import BXH</button>
+        </nav>
+    </header>
+
+    <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+            <h2>🏷️ Alias Manager</h2>
+            <div style="display:flex; gap:0.75rem; align-items:center;">
+                <span id="alias-stats" style="color:var(--text-muted); font-size:0.875rem;"></span>
+                <button onclick="deleteGhosts()" id="delete-ghost-btn"
+                    style="background:rgba(239,68,68,0.15); color:#ef4444; border:none;
+                           padding:0.4rem 0.9rem; border-radius:0.375rem; cursor:pointer; font-size:0.875rem;">
+                    🗑️ Xóa Ghost Aliases
+                </button>
+            </div>
+        </div>
+
+        <!-- Filter bar -->
+        <div style="display:flex; gap:0.75rem; margin-bottom:1rem; flex-wrap:wrap;">
+            <input type="text" id="alias-search" placeholder="🔍 Tìm alias hoặc username..."
+                oninput="renderAliases()"
+                style="padding:0.4rem 0.75rem; background:var(--background); color:white;
+                       border:1px solid var(--surface); border-radius:0.375rem; width:260px;">
+            <select id="alias-filter" onchange="renderAliases()"
+                style="padding:0.4rem 0.75rem; background:var(--background); color:white;
+                       border:1px solid var(--surface); border-radius:0.375rem;">
+                <option value="all">Tất cả</option>
+                <option value="ghost">👻 Ghost (jade=0)</option>
+                <option value="team">⭐ Team members</option>
+                <option value="active">✅ Active (jade>0)</option>
+                <option value="known">🔑 KNOWN_ALIASES</option>
+            </select>
+        </div>
+
+        <!-- Table -->
+        <div style="overflow-x:auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Alias</th>
+                        <th>Username</th>
+                        <th>Max Jade</th>
+                        <th>Best Rank</th>
+                        <th>Days</th>
+                        <th>Team</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="alias-table-body">
+                    <tr><td colspan="7" style="text-align:center; color:var(--text-muted)">Loading...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Container (Import Modal) -->
+<div id="modal-container"></div>
+
+<script src="/static/settings.js"></script>
+<script>
+    // Minimal showImportModal for nav button (loads from app.js logic if needed, 
+    // but usually shared components are better. For now keep it simple.)
+    async function showImportModal() {
+        if (!document.getElementById('import-modal')) {
+            const res = await fetch('/static/index.html');
+            const html = await res.text();
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const modal = doc.getElementById('import-modal-overlay');
+            if (modal) {
+                document.getElementById('modal-container').appendChild(modal);
+                // We might need app.js for the logic, but usually this is just a quick jump
+                window.location.href = '/?import=true';
+            }
+        }
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,31 @@
+# Database
+*.db
+data/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.env
+venv/
+*.egg-info/
+
+# Excel / data files
+*.xlsx
+*.xls
+*.csv
+
+# JSON raw data dumps
+bxh-*.json
+excel_dump.txt
+
+# Scratch / temp
+scratch/
+*.bat
+
+# Claude Code local settings
+.claude/
+
+# OS
+.DS_Store
+Thumbs.db
